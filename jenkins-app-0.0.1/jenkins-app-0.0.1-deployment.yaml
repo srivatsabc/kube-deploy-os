@@ -6,16 +6,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jenkins-app
+  name: jenkins-app-v001
 spec:
   selector:
       matchLabels:
-        app: jenkins-app
+        app: jenkins-app-v001
   replicas: 1
   template:
     metadata:
       labels:
-        app: jenkins-app
+        app: jenkins-app-v001
     spec:
       nodeSelector:
         kubernetes.io/kube-deploy: allow
@@ -27,7 +27,7 @@ spec:
               - key: app
                 operator: In
                 values:
-                - jenkins-app
+                - jenkins-app-v001
             topologyKey: "kubernetes.io/hostname"
       # ----------------------------------
       # will target master node deployment
@@ -37,8 +37,8 @@ spec:
       #    effect: "NoSchedule"
       # ----------------------------------
       containers:
-        - name: jenkins-app
-          image: srivatsabc/jenkins-app:deploy-api-v0.0.1
+        - name: jenkins-app-v001
+          image: srivatsabc/jenkins-app:os-d-api-v0.0.1
           imagePullPolicy: Always
           ports:
             - containerPort: 8081
@@ -46,5 +46,5 @@ spec:
             - name: RUNTIME_ENV_TYPE #In order to help mule application pickup the right jdbc properties
               valueFrom:
                 configMapKeyRef:
-                  name: jenkins-app-config
+                  name: jenkins-app-v001-config
                   key: RUNTIME_ENV_TYPE

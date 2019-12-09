@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: jenkins-app
+  name: jenkins-app-v001
 spec:
   selector:
-    app: jenkins-app
+    app: jenkins-app-v001
   ports:
   - port: 8081
     nodePort: 30081
