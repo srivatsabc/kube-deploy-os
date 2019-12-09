@@ -1,0 +1,65 @@
+===============================================================================
+Build Code and Docker Container
+===============================================================================
+docker build -t srivatsabc/jenkins-app:process-api-v0.0.1 .
+docker push srivatsabc/jenkins-app:process-api-v0.0.1
+
+===============================================================
+Create namespace:
+===============================================================
+kubectl create namespace kube-deploy
+
+===============================================================
+Create and verify configmap:
+===============================================================
+kubectl create -n kube-deploy configmap jenkins-app-config --from-literal=RUNTIME_ENV_TYPE=k8s
+
+kubectl -n kube-deploy get configmap
+
+===============================================================
+Create deployment using yaml:
+===============================================================
+kubectl apply -n kube-deploy -f jenkins-app-0.0.1-deployment.yaml
+
+===============================================================
+Check deployments within namespace:
+===============================================================
+kubectl -n kube-deploy get deployments
+
+===============================================================
+Check status of pods within namespace:
+===============================================================
+kubectl -n kube-deploy get pods
+
+===============================================================
+Check service within namespace to access api:
+===============================================================
+kubectl -n kube-deploy create -f jenkins-app-0.0.1-service.yaml
+
+===============================================================
+Check service within namespace:
+===============================================================
+kubectl -n kube-deploy get svc
+
+
+===============================================================
+Access api on the service port:
+===============================================================
+http://127.0.0.1:30087/api/routes/LHR
+
+
+===============================================================
+Delete service and deployment
+===============================================================
+
+kubectl delete deployment jenkins-app --namespace=kube-deploy
+
+kubectl delete service jenkins-app --namespace=kube-deploy
+
+===============================================================
+Port forward
+===============================================================
+kubectl port-forward -n kube-deploy svc/jenkins-app 30085:8085
+
+
+docker run -p 30085:8085 --name jenkins-app -d srivatsabc/jenkins-app:001

@@ -1,0 +1,179 @@
+initial: e79b0950c4694bb3bb1c91f80ab0e275
+
+oc import-image deploy/jenkins:2 --from=docker.io/openshift/jenkins-2-centos7 --confirm
+
+===============================================================================
+Build Code and Docker Container
+===============================================================================
+docker build -t srivatsabc/jenkins:os-v0.0.4 .
+docker push srivatsabc/jenkins:os-v0.0.4
+
+===============================================================================
+Remove images from local docker repo:
+===============================================================================
+docker images
+docker rmi
+
+===============================================================
+Create namespace and service account:
+===============================================================
+oc create namespace deploy
+
+oc -n deploy create sa jenkins
+
+oc create clusterrolebinding jenkins --clusterrole cluster-admin --serviceaccount=deploy:jenkins
+
+oc -n deploy get sa jenkins -o yaml
+secrets:
+- name: jenkins-token-w4wdv
+- name: jenkins-dockercfg-85v8t
+
+
+oc -n deploy get secret jenkins-token-w4wdv -o yaml > jenkins_jenkins-token-w4wdv_template.yaml
+
+oc get -n deploy sa/jenkins --template jenkins_jenkins-token-w4wdv_template.yaml
+
+oc auth can-i list pods --namespace deploy --as okd-admin
+
+oc adm policy add-scc-to-group anyuid -z jenkins
+
+oc adm policy add-scc-to-user anyuid -z default
+oc adm policy add-scc-to-user anyuid -z jenkins
+
+oc adm policy add-scc-to-user privileged -n deploy -z jenkins
+
+oc adm policy add-scc-to-user anyuid system:authenticated
+
+oc adm policy add-scc-to-group anyuid system:authenticated
+
+oc adm policy add-scc-to-user anyuid system:serviceaccount:deploy:jenkins
+
+
+===============================================================
+Create and verify configmap:
+===============================================================
+oc create -n deploy configmap geocode-locator-app-config --from-literal=RUNTIME_ENV_TYPE=k8s
+
+oc -n deploy get configmap
+
+
+oc edit scc restricted
+runAsUser works by editing Security Context Constraints (oc edit scc restricted) then change the context: MustRunAsRange to RunAsAny.
+
+===============================================================
+Allowing jenkins hostpath in OpenShift
+===============================================================
+oc apply -f podsecuritypolicy.yaml
+securitycontextconstraints "hostpath" created
+
+oc patch scc hostpath -p '{"allowHostDirVolumePlugin": true}'
+securitycontextconstraints "hostpath" patched
+
+oc adm policy add-scc-to-group hostpath serviceaccount:jenkins
+scc "hostpath" added to groups: ["system:authenticated"]
+
+===============================================================
+Allowing jenkins pod to be run as priviledged
+===============================================================
+oc apply -f allowPrivilegedContainer_SCC.yaml
+securitycontextconstraints "piviledgedcontainer" created
+
+oc get scc piviledgedcontainer
+oc edit scc restricted
+
+===============================================================
+Create deployment using yaml:
+===============================================================
+oc apply -n deploy -f jenkins-pv-deployment.yaml
+oc apply -n deploy -f jenkins-deployment.yaml
+
+===============================================================
+Check deployments within namespace:
+===============================================================
+oc -n deploy get deployments
+
+===============================================================
+Check status of pods within namespace:
+===============================================================
+oc -n deploy get pods
+
+oc -n deploy get pods -o wide
+
+===============================================================
+Check service within namespace to access api:
+===============================================================
+oc -n deploy apply -f jenkins-service.yaml
+
+===============================================================
+Check service within namespace:
+===============================================================
+oc -n deploy get svc
+
+
+===============================================================
+Access api on the service port:
+===============================================================
+docker run -p 8080:8080 -p 50000:50000 --name jenkins-os srivatsabc/jenkins:os-v0.0.1
+
+winpty docker exec -it jenkins-os bash
+
+winpty docker exec -it --user root 282254cce342 bash
+
+http://192.168.1.60:31385
+
+oc cluster-info | grep master
+
+oc -n deploy get pods
+
+oc -n deploy describe pod jenkins-55748f4697-rxkp7
+IP: 10.36.0.29
+
+wget http://updates.jenkins-ci.org/download/war/2.164.3/jenkins.war
+
+docker exec -u root -it 1838668c9cd1 /bin/sh
+
+oc scale deployment jenkins --replicas=1 -n deploy
+
+echo -n 'srivatsa{passwd}' | sha256sum
+b75c7296aaaba081b67d369f86436e06ce967098307790ed0365caf776063796
+<passwordHash>passwd:b75c7296aaaba081b67d369f86436e06ce967098307790ed0365caf776063796</passwordHash>
+
+===============================================================
+Delete service and deployment
+===============================================================
+oc delete pod system-api-pod --namespace=deploy
+
+oc delete deployment jenkins --namespace=deploy
+
+oc delete service jenkins --namespace=deploy
+
+oc delete pvc jenkins-pvc-volume
+
+# Update jenkins
+#USER root
+#RUN wget http://updates.jenkins-ci.org/download/war/2.138.4/jenkins.war
+COPY jenkins.war /usr/share/jenkins
+RUN chown jenkins:jenkins /usr/share/jenkins/jenkins.war
+
+# Distributed Builds plugins
+RUN /usr/local/bin/install-plugins.sh ssh-slaves
+
+# install Notifications and Publishing plugins
+RUN /usr/local/bin/install-plugins.sh email-ext
+RUN /usr/local/bin/install-plugins.sh mailer
+RUN /usr/local/bin/install-plugins.sh slack
+
+# Artifacts
+RUN /usr/local/bin/install-plugins.sh htmlpublisher
+
+# UI
+RUN /usr/local/bin/install-plugins.sh greenballs
+RUN /usr/local/bin/install-plugins.sh simple-theme-plugin
+
+# Scaling
+RUN /usr/local/bin/install-plugins.sh kubernetes
+
+# install Maven
+USER root
+RUN apt-get update && apt-get install -y maven
+USER jenkins
