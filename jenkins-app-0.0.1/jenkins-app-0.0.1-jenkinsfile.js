@@ -10,7 +10,7 @@ pipeline {
      service_yaml = "jenkins-app-0.0.1-service.yaml"
      okd_namespace = "deploy"
      okd_application = "jenkins-app-v001"
-     config_map = "jenkins-app-config-v001-config"
+     config_map = "jenkins-app-v001-config"
    }
 
   agent {
