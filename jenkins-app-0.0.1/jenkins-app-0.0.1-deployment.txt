@@ -1,4 +1,12 @@
 ===============================================================================
+Labelling nodes
+===============================================================================
+oc label node infra1.openshift.com kube-deploy=allow
+oc describe node infra1.openshift.com
+
+oc edit namespace deploy
+openshift.io/node-selector: ""
+===============================================================================
 Build Code and Docker Container
 ===============================================================================
 docker build -t srivatsabc/jenkins-app:process-api-v0.0.1 .
