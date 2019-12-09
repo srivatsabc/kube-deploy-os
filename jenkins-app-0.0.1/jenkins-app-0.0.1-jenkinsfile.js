@@ -1,15 +1,15 @@
 pipeline {
 
   environment {
-     git_application = "jenkins-app-0.0."
+     git_application = "jenkins-app-0.0.1"
      docker_id = "srivatsabc"
      docker_pwd = "wipro123"
-     docker_repo = "airport-app"
+     docker_repo = "jenkins-app"
      docker_tag = "os-d-api-v0.0.1"
      deploymemt_yaml = "jenkins-app-0.0.1-deployment.yaml"
      service_yaml = "jenkins-app-0.0.1-service.yaml"
      okd_namespace = "deploy"
-     $okd_application = "jenkins-app-v001"
+     okd_application = "jenkins-app-v001"
      config_map = "jenkins-app-config-v001-config"
    }
 
@@ -72,7 +72,7 @@ pipeline {
     stage('Build docker image') {
       steps {
         sh "echo build docker image $docker_id/$docker_repo:$docker_tag"
-        sh 'docker build -t $docker_id/$docker_repo:$docker_tag $application/.'
+        sh 'docker build -t $docker_id/$docker_repo:$docker_tag $git_application/.'
       }
     }
 
@@ -108,13 +108,13 @@ pipeline {
 
     stage('OpenShift deployment') {
       steps {
-        sh 'oc apply -n $okd_namespace -f $application/$deploymemt_yaml'
+        sh 'oc apply -n $okd_namespace -f $git_application/$deploymemt_yaml'
       }
     }
 
     stage('OpenShift service') {
       steps {
-        sh 'oc apply -n $okd_namespace -f $application/$service_yaml'
+        sh 'oc apply -n $okd_namespace -f $git_application/$service_yaml'
       }
     }
   }

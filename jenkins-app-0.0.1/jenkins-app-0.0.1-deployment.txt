@@ -2,6 +2,7 @@
 Labelling nodes
 ===============================================================================
 oc label node infra1.openshift.com kube-deploy=allow
+
 oc describe node infra1.openshift.com
 
 oc edit namespace deploy

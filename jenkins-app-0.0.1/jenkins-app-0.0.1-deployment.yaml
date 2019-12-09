@@ -18,7 +18,7 @@ spec:
         app: jenkins-app-v001
     spec:
       nodeSelector:
-        kubernetes.io/kube-deploy: allow
+        region: infra
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
