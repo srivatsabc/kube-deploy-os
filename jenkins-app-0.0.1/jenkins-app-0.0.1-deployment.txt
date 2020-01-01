@@ -1,7 +1,7 @@
 ===============================================================================
 Labelling nodes
 ===============================================================================
-oc label node infra1.openshift.com kube-deploy=allow
+oc label node infra1.openshift.com deploy=allow
 
 oc describe node infra1.openshift.com
 
@@ -17,39 +17,39 @@ docker push srivatsabc/jenkins-app:process-api-v0.0.1
 ===============================================================
 Create namespace:
 ===============================================================
-kubectl create namespace kube-deploy
+oc create namespace deploy
 
 ===============================================================
 Create and verify configmap:
 ===============================================================
-kubectl create -n kube-deploy configmap jenkins-app-config --from-literal=RUNTIME_ENV_TYPE=k8s
+oc create -n deploy configmap jenkins-app-config --from-literal=RUNTIME_ENV_TYPE=k8s
 
-kubectl -n kube-deploy get configmap
+oc -n deploy get configmap
 
 ===============================================================
 Create deployment using yaml:
 ===============================================================
-kubectl apply -n kube-deploy -f jenkins-app-0.0.1-deployment.yaml
+oc apply -n deploy -f jenkins-app-0.0.1-deployment.yaml
 
 ===============================================================
 Check deployments within namespace:
 ===============================================================
-kubectl -n kube-deploy get deployments
+oc -n deploy get deployments
 
 ===============================================================
 Check status of pods within namespace:
 ===============================================================
-kubectl -n kube-deploy get pods
+oc -n deploy get pods
 
 ===============================================================
 Check service within namespace to access api:
 ===============================================================
-kubectl -n kube-deploy create -f jenkins-app-0.0.1-service.yaml
+oc -n deploy create -f jenkins-app-0.0.1-service.yaml
 
 ===============================================================
 Check service within namespace:
 ===============================================================
-kubectl -n kube-deploy get svc
+oc -n deploy get svc
 
 
 ===============================================================
@@ -62,14 +62,14 @@ http://127.0.0.1:30087/api/routes/LHR
 Delete service and deployment
 ===============================================================
 
-kubectl delete deployment jenkins-app --namespace=kube-deploy
+oc delete deployment jenkins-app --namespace=deploy
 
-kubectl delete service jenkins-app --namespace=kube-deploy
+oc delete service jenkins-app --namespace=deploy
 
 ===============================================================
 Port forward
 ===============================================================
-kubectl port-forward -n kube-deploy svc/jenkins-app 30085:8085
+oc port-forward -n deploy svc/jenkins-app 30085:8085
 
 
 docker run -p 30085:8085 --name jenkins-app -d srivatsabc/jenkins-app:001
