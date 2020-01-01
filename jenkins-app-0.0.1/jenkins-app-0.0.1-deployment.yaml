@@ -18,7 +18,7 @@ spec:
         app: jenkins-app-v001
     spec:
       nodeSelector:
-        region: infra
+        region: primary
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

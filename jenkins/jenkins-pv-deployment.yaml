@@ -1,27 +1,28 @@
-apiVersion: v1
 kind: PersistentVolume
+apiVersion: v1
 metadata:
   name: jenkins-p-volume
+  labels:
+    type: local
 spec:
+  storageClassName: manual
   capacity:
     storage: 2Gi
   accessModes:
-  - ReadWriteMany
-  nfs:
-    path: /nfs/os_cluster_persistant_store/jenkins/data
-    server: nfs.openshift.com
-  claimRef:
-    name: jenkins-pvc-volume
-    namespace: deploy
+    - ReadWriteOnce
+  hostPath:
+    path: "/nfs/p_store/jenkins/data" # create the path on the host machine for persistent storage
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: jenkins-pvc-volume
+  labels:
+    app: wordpress
 spec:
   storageClassName: manual
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 2Gi	
+      storage: 2Gi

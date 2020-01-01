@@ -10,7 +10,7 @@ spec:
         app: jenkins
     spec:
       nodeSelector:  # Assigning the database to node01 node name got from the kubectl get nodes command
-        deploy: allow
+        allow: deploy
       containers:
         - name: jenkins
           image: srivatsabc/jenkins:os-v0.0.4

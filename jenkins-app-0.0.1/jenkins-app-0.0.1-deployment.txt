@@ -7,6 +7,7 @@ oc describe node infra1.openshift.com
 
 oc edit namespace deploy
 openshift.io/node-selector: ""
+
 ===============================================================================
 Build Code and Docker Container
 ===============================================================================

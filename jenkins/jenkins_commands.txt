@@ -1,7 +1,12 @@
-initial: e79b0950c4694bb3bb1c91f80ab0e275
+===============================================================================
+Label nodes
+===============================================================================
+oc label node node1.openshift.com allow=deploy
 
-oc import-image deploy/jenkins:2 --from=docker.io/openshift/jenkins-2-centos7 --confirm
+oc edit namespace deploy
+scheduler.alpha.kubernetes.io/node-selector: deploy=allow
 
+oc label node master.openshift.com deploy=allow
 ===============================================================================
 Build Code and Docker Container
 ===============================================================================
@@ -41,6 +46,8 @@ oc adm policy add-scc-to-user anyuid -z default
 oc adm policy add-scc-to-user anyuid -z jenkins
 
 oc adm policy add-scc-to-user privileged -n deploy -z jenkins
+oc adm policy add-scc-to-user admin -n deploy -z jenkins
+
 
 oc adm policy add-scc-to-user anyuid system:authenticated
 
@@ -147,6 +154,7 @@ oc delete deployment jenkins --namespace=deploy
 
 oc delete service jenkins --namespace=deploy
 
+oc delete pv jenkins-p-volume
 oc delete pvc jenkins-pvc-volume
 
 # Update jenkins
