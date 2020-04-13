@@ -1,0 +1,62 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      nodeSelector:  # Assigning the database to node01 node name got from the kubectl get nodes command
+        deploy: allow
+      containers:
+        - name: jenkins
+          image: restio/jenkins-ace:os-v0.0.2
+          env:
+            - name: JAVA_OPTS
+              value: -Djenkins.install.runSetupWizard=false
+          ports:
+            - name: http-port
+              containerPort: 8080
+            - name: jnlp-port
+              containerPort: 50000
+          volumeMounts:
+            - name: jenkins-home-persistent-storage
+              mountPath: /var/jenkins_home
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+              readOnly: true
+          securityContext:
+            privileged: true    # Running container as privileged so it can mount docker.sock
+            runAsUser: 0
+      securityContext: {}
+      serviceAccountName: jenkins
+      #nodeSelector:
+      #  kubernetes.io/kube-deploy: allow
+      #affinity:
+      #  podAntiAffinity:
+      #    requiredDuringSchedulingIgnoredDuringExecution:
+      #    - labelSelector:
+      #        matchExpressions:
+      #        - key: app
+      #          operator: In
+      #          values:
+      #          - geocode-locator-app
+      #      topologyKey: "kubernetes.io/hostname"
+      # ----------------------------------
+      # will target master node deployment
+      #tolerations:
+      #  - key: "node-role.kubernetes.io/master"
+      #    operator: "Exists"
+      #    effect: "NoSchedule"
+      # ----------------------------------
+      volumes:
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
+        - name: jenkins-home-persistent-storage
+          persistentVolumeClaim:
+            claimName: jenkins-pvc-volume

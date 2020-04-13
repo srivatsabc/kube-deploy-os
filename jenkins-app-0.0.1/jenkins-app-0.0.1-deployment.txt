@@ -1,7 +1,8 @@
 ===============================================================================
 Labelling nodes
 ===============================================================================
-oc label node infra1.openshift.com deploy=allow
+oc label node node1.openshift.com deploy=allow
+oc label node node2.openshift.com deploy=allow
 
 oc describe node infra1.openshift.com
 
